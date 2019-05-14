@@ -20,8 +20,14 @@ double mean_server_utilization;
 double mean_queue_length;
 double number_packets_dropped;
 
+struct Event {
+    double time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
+    enum type { arrival, departure };
+    Event* next;
+    Event* prev; 
+};
+
 void initialize() {
-    cout << "initialize" << endl;
     // TODO: initialize all data structures
 
     // counters for maintaining statistics
