@@ -47,9 +47,13 @@ void initialize() {
     length = 0; // number of packets in queue
     current_time = 0;
 
-    // TODO: create first arrival event
-    
+    // Create first arrival event
+    Event *first = new Event;    
     double first_arrival_time = negative_exponentially_distributed_time(arrival_rate) + current_time; // event time for first arrival event
+    first->time = first_arrival_time;
+    first->type = Event::arrival;
+    first->next = nullptr;
+    first->prev = nullptr;
     
     // TODO: insert first arrival event into GEL
     
