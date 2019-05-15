@@ -67,8 +67,12 @@ void initialize() {
 }
 
 void process_arrival_event(Event *ev) {
-    // TODO: Set current time to be the event time
+    current_time = ev->event_time; // set current time to be event time
     // TODO: Schedule next arrival event
+        // TODO: Find time of next arrival = current time + randomly generated time with rate lanbda
+        // TODO: Create a new packet and determine its service time with a randomly generated time with rate mu
+        // TODO: Create new arrival event
+        // TODO: Insert event into event list. Need to order.
     // TODO: Process arrival event
 }
 
