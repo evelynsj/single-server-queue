@@ -1,4 +1,5 @@
 #include <iostream>
+#include "math.h"
 using namespace std;
 
 // TODO: MAXIMUM BUFFER
@@ -22,10 +23,17 @@ double number_packets_dropped;
 
 struct Event {
     double time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
-    enum type { arrival, departure };
+    enum event_type { arrival, departure };
+    event_type type;
     Event* next;
     Event* prev; 
 };
+ 
+double negative_exponentially_distributed_time(double rate) {
+    double u;
+    u = drand48();
+    return ((-1/rate)*log(1-u));
+}
 
 void initialize() {
     // TODO: initialize all data structures
@@ -40,8 +48,11 @@ void initialize() {
     current_time = 0;
 
     // TODO: create first arrival event
+    
+    double first_arrival_time = negative_exponentially_distributed_time(arrival_rate) + current_time; // event time for first arrival event
+    
     // TODO: insert first arrival event into GEL
-    // TODO: event time of first arrival = obtained by adding a randomly generated inter-arrival time to the current time (0)
+    
 }
 
 int main() {
