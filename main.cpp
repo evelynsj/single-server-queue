@@ -7,7 +7,8 @@ using namespace std;
 // TODO: MAXIMUM BUFFER
 
 struct Event {
-    double time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
+    double event_time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
+    double service_time;
     enum event_type { arrival, departure };
     event_type type;
     Event* next;
@@ -53,7 +54,9 @@ void initialize() {
     // Create first arrival event
     Event *first = new Event;    
     double first_arrival_time = negative_exponentially_distributed_time(arrival_rate) + current_time; // event time for first arrival event
-    first->time = first_arrival_time;
+    double first_service_time = negative_exponentially_distributed_time(service_rate);
+    first->event_time = first_arrival_time;
+    first->service_time = first_service_time;
     first->type = Event::arrival;
     first->next = nullptr;
     first->prev = nullptr;
@@ -61,6 +64,12 @@ void initialize() {
     
     GEL.push_front(first); // insert first arrival event to GEL
     
+}
+
+void process_arrival_event(Event *ev) {
+    // TODO: Set current time to be the event time
+    // TODO: Schedule next arrival event
+    // TODO: Process arrival event
 }
 
 int main() {
@@ -81,6 +90,9 @@ int main() {
         Event *ev = GEL.front(); // get front because first element needs to be the next event
         GEL.pop_front();
         // 2. if the first event is an arrival event then process-arrival-event
+        if (ev->type == Event::arrival) {
+            process_arrival_event(ev);
+        }
         // 3. Otherwise, it must be a departure event and hence process-service-completion
     }
     
