@@ -19,7 +19,7 @@ int length;
 double current_time;
 double service_rate; // mu
 double arrival_rate; // lambda
-list <Event*> GEL; // GEL (Global Event List)
+list <Event*> GEL; // GEL (Global Event List) sorted in increasing order of time
 queue <Event*> buffer; // models the buffer
 
 /* global variables for statistics */
@@ -73,12 +73,17 @@ int main() {
     
     initialize();
 
-    /*
-        for i = 0; i < 100000; i++
-            1. get first event from GEL
-            2. if the event is an arrival then process-arrival-event
-            3. otherwise it must be a departure event and hence process-service-completion 
-    */
+    for (int i = 0; i < 100000; ++i) {
+        // 1. get first event from GEL
+        if (GEL.empty()) {
+            break;
+        }
+        Event *ev = GEL.front(); // get front because first element needs to be the next event
+        GEL.pop_front();
+        // 2. if the first event is an arrival event then process-arrival-event
+        // 3. Otherwise, it must be a departure event and hence process-service-completion
+    }
+    
 
    // output statistics
 
