@@ -1,14 +1,26 @@
 #include <iostream>
-#include "math.h"
+#include <cmath>
+#include <list>
+#include <queue>
 using namespace std;
 
 // TODO: MAXIMUM BUFFER
+
+struct Event {
+    double time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
+    enum event_type { arrival, departure };
+    event_type type;
+    Event* next;
+    Event* prev; 
+};
 
 /* global variables for processing */
 int length;
 double current_time;
 double service_rate; // mu
 double arrival_rate; // lambda
+list <Event*> GEL; // GEL (Global Event List)
+queue <Event*> buffer; // models the buffer
 
 /* global variables for statistics */
 double total_time;
@@ -20,14 +32,6 @@ int packets_dropped;
 double mean_server_utilization;
 double mean_queue_length;
 double number_packets_dropped;
-
-struct Event {
-    double time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
-    enum event_type { arrival, departure };
-    event_type type;
-    Event* next;
-    Event* prev; 
-};
  
 double negative_exponentially_distributed_time(double rate) {
     double u;
@@ -36,7 +40,6 @@ double negative_exponentially_distributed_time(double rate) {
 }
 
 void initialize() {
-    // TODO: initialize all data structures
 
     // counters for maintaining statistics
     total_time = 0;
@@ -54,8 +57,9 @@ void initialize() {
     first->type = Event::arrival;
     first->next = nullptr;
     first->prev = nullptr;
+    // TODO: may need service time somewhere in between
     
-    // TODO: insert first arrival event into GEL
+    GEL.push_front(first); // insert first arrival event to GEL
     
 }
 
