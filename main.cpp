@@ -150,24 +150,24 @@ void process_arrival_event(Event *curr_ev) {
     create_arrival(next_event_time, next_service_time);
 
     // Process arrival event
-        if (length == 0) { // Server is free
-            // Schedule a departure event:
-            double processing_service_time = curr_ev->service_time;
-            double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
-            create_departure(departure_event_time, processing_service_time);
-            length++;
+    if (length == 0) { // Server is free
+        // Schedule a departure event:
+        double processing_service_time = curr_ev->service_time;
+        double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
+        create_departure(departure_event_time, processing_service_time);
+        length++;
+        total_length++;
+    }
+    else if (length > 0) { // If server is not free
+        if (length - 1 < MAXBUFFER) { // if queue is not full, put packet into queue
+            buffer.push(curr_ev);
+            length++; // Since this is a new arrival event, increment length
             total_length++;
         }
-        else if (length > 0) { // If server is not free
-            if (length - 1 < MAXBUFFER) { // if queue is not full, put packet into queue
-                buffer.push(curr_ev);
-                length++; // Since this is a new arrival event, increment length
-                total_length++;
-            }
-            else { // if queue is full, drop packet and RECORD
-                packets_dropped++;
-            }
+        else { // if queue is full, drop packet and RECORD
+            packets_dropped++;
         }
+    }
 }
 
 void process_departure_event(Event* curr_ev) {
