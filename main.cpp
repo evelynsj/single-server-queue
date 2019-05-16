@@ -199,6 +199,7 @@ void process_departure_event(Event* curr_ev) {
     }
     else if (length > 0) { // if queue is not empty
         Event *ev = buffer.front(); // Dequeue first packet from buffer
+        buffer.pop();
         double next_event_time = current_time + ev->service_time; // Create departure event
         double next_service_time = ev->service_time;
         create_departure(next_event_time, next_service_time);
