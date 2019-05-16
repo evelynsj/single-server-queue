@@ -17,6 +17,7 @@ struct Event {
 
 /* global variables for processing */
 int length;
+int MAXBUFFER;
 double current_time;
 double service_rate; // mu
 double arrival_rate; // lambda
@@ -111,13 +112,13 @@ void insert(Event* event) { // insert to GEL
                     event->prev = prev;
                     event->next = curr;
                     curr->prev = event;
-                    return;
+                    break;
                 }
                 if (curr->next == nullptr && event->event_time > curr->event_time) { // Insert at the end
                     curr->next = event;
                     event->prev = curr;
                     event->next = nullptr;
-                    return;
+                    break;
                 }
                 curr = curr->next;
             }
@@ -162,7 +163,7 @@ void process_arrival_event(Event *curr_ev) {
     create_arrival(next_event_time, next_service_time);
     iterate();
 
-    // TODO: Process arrival event
+    // Process arrival event
         if (length == 0) { // Server is free
             // Schedule a departure event:
             cout << "Server is free" << endl;
@@ -170,15 +171,22 @@ void process_arrival_event(Event *curr_ev) {
             double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
             cout << departure_event_time << endl;
             create_departure(departure_event_time, processing_service_time);
+            length++;
             iterate();
         }
-        
-        // TODO: if server is not free (length > 0)
-            // TODO: If queue is not full (length - 1 < MAXBUFFER), put packet into queue
-            // TODO: if queue is full, drop packet and RECORD
-            // TODO: Since this is a new arrival event, increment length
-            // TODO: Update STATS
-
+        else if (length > 0) { // TODO: If server is not free
+            cout << "server is busy" << endl;
+            cout << length << endl;
+            if (length - 1 < MAXBUFFER) { // if queue is not full, put packet into queue
+                cout << "queue packet" << endl;
+                buffer.push(curr_ev);
+                length++; // Since this is a new arrival event, increment length
+            }
+            else { // if queue is full, drop packet and RECORD
+                cout << "drop packets" << endl;
+                packets_dropped++;
+            }
+        }
 }
 
 void process_departure_event(Event* ev) {
@@ -188,12 +196,11 @@ void process_departure_event(Event* ev) {
     cout << "Processing current time is " << current_time << endl;
     // TODO: MIGHT NEED TO UPDATE TOTAL LENGTH
     server_busy_time += processing_service_time;
-
+    --length;
     if (length == 0) { // do nothing if queue is empty
         return;
     }
     else if (length > 0) { // TODO: if queue is not empty
-        // TODO: decrement length
         // TODO: Dequeue first packet from buffer
         // TODO: Create new departure event for a time which si current time + service time
         // TODO: Insert event at the right place in GEL
@@ -208,13 +215,16 @@ int main() {
 
     cout << "Enter the arrival rate (packets/second): ";
     cin >> arrival_rate;
+
+    cout << "Enter the maximum buffer: ";
+    cin >> MAXBUFFER;
     
     initialize();
 
-    for (int i = 0; i < 7; ++i) { // 100000
+    for (int i = 0; i < 8; ++i) { // 100000
         cout << "Iteration " << i << endl;
         // 1. get first event from GEL
-        if (GELsize == 0) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
+        if (GELsize == 0) {
             break;
         }
         Event *ev = GELhead; // get front because first element needs to be the next event
