@@ -168,6 +168,7 @@ void process_arrival_event(Event *curr_ev) {
             cout << departure_event_time << endl;
             create_departure(departure_event_time, processing_service_time);
             length++;
+            total_length++;
             iterate();
         }
         else if (length > 0) { // If server is not free
@@ -177,6 +178,7 @@ void process_arrival_event(Event *curr_ev) {
                 cout << "queue packet" << endl;
                 buffer.push(curr_ev);
                 length++; // Since this is a new arrival event, increment length
+                total_length++;
             }
             else { // if queue is full, drop packet and RECORD
                 cout << "drop packets" << endl;
@@ -186,7 +188,7 @@ void process_arrival_event(Event *curr_ev) {
 }
 
 void process_departure_event(Event* curr_ev) {
-    cout << "process departure" << endl;
+    // cout << "process departure" << endl;
     current_time = curr_ev->event_time;
     double processing_service_time = curr_ev->service_time;
     cout << "Processing current time is " << current_time << endl;
@@ -201,6 +203,13 @@ void process_departure_event(Event* curr_ev) {
         double next_service_time = ev->service_time;
         create_departure(next_event_time, next_service_time);
     }
+}
+
+void output_statistics() {
+    total_time = current_time;
+    mean_server_utilization = server_busy_time / total_time;
+    mean_queue_length = total_length / total_time;
+    number_packets_dropped = packets_dropped;
 }
 
 int main() {
@@ -236,7 +245,7 @@ int main() {
         iterate();
     }
     
-
    // output statistics
+   output_statistics();
 
 }
