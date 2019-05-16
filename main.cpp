@@ -103,12 +103,21 @@ void insert(Event* event) { // insert to GEL
         }
         else {
             Event *curr = GELhead;
+            Event *prev = nullptr;
             while (curr) {
-                // TODO: if insert in the middle
+                if (event->event_time < curr->event_time) { // Insert in the middle
+                    prev = curr->prev;
+                    prev->next = event;
+                    event->prev = prev;
+                    event->next = curr;
+                    curr->prev = event;
+                    return;
+                }
                 if (curr->next == nullptr && event->event_time > curr->event_time) { // Insert at the end
                     curr->next = event;
                     event->prev = curr;
                     event->next = nullptr;
+                    return;
                 }
                 curr = curr->next;
             }
@@ -202,7 +211,7 @@ int main() {
     
     initialize();
 
-    for (int i = 0; i < 5; ++i) { // 100000
+    for (int i = 0; i < 7; ++i) { // 100000
         cout << "Iteration " << i << endl;
         // 1. get first event from GEL
         if (GELsize == 0) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
