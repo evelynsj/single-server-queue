@@ -38,7 +38,7 @@ double number_packets_dropped;
 void insert(Event *ev);
 void iterate();
  
-double negative_exponentially_distributed_time(double rate) {
+double neg_exp_time(double rate) {
     double u;
     u = drand48();
     return ((-1/rate)*log(1-u));
@@ -61,8 +61,8 @@ void initialize() {
 
     // Create first arrival event
     Event *first = new Event;    
-    double first_arrival_time = negative_exponentially_distributed_time(arrival_rate) + current_time; // event time for first arrival event
-    double first_service_time = negative_exponentially_distributed_time(service_rate);
+    double first_arrival_time = neg_exp_time(arrival_rate) + current_time; // event time for first arrival event
+    double first_service_time = neg_exp_time(service_rate);
     first->event_time = first_arrival_time;
     first->service_time = first_service_time;
     first->type = Event::arrival;
