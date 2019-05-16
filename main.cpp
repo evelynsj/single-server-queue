@@ -166,9 +166,10 @@ void process_departure_event(Event* ev) {
     cout << current_time << endl;
     // TODO: MIGHT NEED TO UPDATE TOTAL LENGTH
     server_busy_time += processing_service_time;
-    length--;
+    
     // TODO: If queue is empty (length ==0) do nothing
     // TODO: If queue is not empty (length > 0) do:
+        // TODO: decrement length
         // TODO: Dequeue first packet from buffer
         // TODO: Create new departure event for a time which si current time + service time
         // TODO: Insert event at the right place in GEL
