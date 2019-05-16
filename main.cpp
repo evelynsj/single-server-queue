@@ -34,14 +34,68 @@ int packets_dropped;
 double mean_server_utilization;
 double mean_queue_length;
 double number_packets_dropped;
-
-void insert(Event *ev);
-void iterate();
  
 double neg_exp_time(double rate) {
     double u;
     u = drand48();
     return ((-1/rate)*log(1-u));
+}
+
+void iterate() {
+    cout << "***********" << endl;
+    cout << "start iterating" << endl;
+    cout << "GELsize is " << GELsize << endl;
+    Event *curr = GELhead;
+    while (curr != nullptr) {
+        if (curr->type == Event::arrival) {
+            cout << "Arrival ";
+        } else {
+            cout << "Departure ";
+        }
+        cout << curr->event_time << endl;
+        curr = curr->next;
+    }
+    cout << "done iterating" << endl;
+    cout << "************" << endl;
+}
+
+void insert(Event* event) { // insert to GEL
+    // if head is nullptr
+    if (GELhead == nullptr) {
+        GELhead = event;
+        GELhead->next = nullptr;
+        GELhead->prev = nullptr; 
+    }
+    else {
+        if (event->event_time < GELhead->event_time) { // insert in front of head
+            event->next = GELhead;
+            event->prev = nullptr;
+            GELhead->prev = event;
+            GELhead = event;
+        }
+        else {
+            Event *curr = GELhead;
+            Event *prev = nullptr;
+            while (curr) {
+                if (event->event_time < curr->event_time) { // Insert in the middle
+                    prev = curr->prev;
+                    prev->next = event;
+                    event->prev = prev;
+                    event->next = curr;
+                    curr->prev = event;
+                    break;
+                }
+                if (curr->next == nullptr && event->event_time > curr->event_time) { // Insert at the end
+                    curr->next = event;
+                    event->prev = curr;
+                    event->next = nullptr;
+                    break;
+                }
+                curr = curr->next;
+            }
+        }
+    }
+    GELsize++;
 }
 
 void create_arrival(double ev_time, double serv_time) {
@@ -80,118 +134,45 @@ void initialize() {
     double first_arrival_time = neg_exp_time(arrival_rate) + current_time; // event time for first arrival event
     double first_service_time = neg_exp_time(service_rate);
     create_arrival(first_arrival_time, first_service_time);
-
-    iterate();
     
 }
 
-void insert(Event* event) { // insert to GEL
-    // if head is nullptr
-    if (GELhead == nullptr) {
-        GELhead = event;
-        GELhead->next = nullptr;
-        GELhead->prev = nullptr; 
-    }
-    else {
-        cout << "insert sorted" << endl;
-        if (event->event_time < GELhead->event_time) { // insert in front of head
-            event->next = GELhead;
-            event->prev = nullptr;
-            GELhead->prev = event;
-            GELhead = event;
-        }
-        else {
-            Event *curr = GELhead;
-            Event *prev = nullptr;
-            while (curr) {
-                if (event->event_time < curr->event_time) { // Insert in the middle
-                    prev = curr->prev;
-                    prev->next = event;
-                    event->prev = prev;
-                    event->next = curr;
-                    curr->prev = event;
-                    break;
-                }
-                if (curr->next == nullptr && event->event_time > curr->event_time) { // Insert at the end
-                    curr->next = event;
-                    event->prev = curr;
-                    event->next = nullptr;
-                    break;
-                }
-                curr = curr->next;
-            }
-        }
-    }
-    GELsize++;
-}
-
 void delete_head() {
-    cout << "Delete head" << endl;
     GELhead = GELhead->next;
     GELsize--;
 }
 
-void iterate() {
-    cout << "***********" << endl;
-    cout << "start iterating" << endl;
-    cout << "GELsize is " << GELsize << endl;
-    Event *curr = GELhead;
-    while (curr != nullptr) {
-        if (curr->type == Event::arrival) {
-            cout << "Arrival ";
-        } else {
-            cout << "Departure ";
-        }
-        cout << curr->event_time << endl;
-        curr = curr->next;
-    }
-    cout << "done iterating" << endl;
-    cout << "************" << endl;
-}
-
 void process_arrival_event(Event *curr_ev) {
-    cout << "Process arrival event" << endl;
     current_time = curr_ev->event_time; // set current time to be event time
-    cout << "Current processing event time is " << current_time << endl;
     // Schedule next arrival event
     double next_event_time = current_time + neg_exp_time(arrival_rate);
     double next_service_time = neg_exp_time(service_rate);
     create_arrival(next_event_time, next_service_time);
-    iterate();
 
     // Process arrival event
         if (length == 0) { // Server is free
             // Schedule a departure event:
-            cout << "Server is free" << endl;
             double processing_service_time = curr_ev->service_time;
             double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
-            cout << departure_event_time << endl;
             create_departure(departure_event_time, processing_service_time);
             length++;
             total_length++;
-            iterate();
         }
         else if (length > 0) { // If server is not free
-            cout << "server is busy" << endl;
-            cout << length << endl;
             if (length - 1 < MAXBUFFER) { // if queue is not full, put packet into queue
-                cout << "queue packet" << endl;
                 buffer.push(curr_ev);
                 length++; // Since this is a new arrival event, increment length
                 total_length++;
             }
             else { // if queue is full, drop packet and RECORD
-                cout << "drop packets" << endl;
                 packets_dropped++;
             }
         }
 }
 
 void process_departure_event(Event* curr_ev) {
-    // cout << "process departure" << endl;
     current_time = curr_ev->event_time;
     double processing_service_time = curr_ev->service_time;
-    cout << "Processing current time is " << current_time << endl;
     server_busy_time += processing_service_time;
     --length;
     if (length == 0) { // do nothing if queue is empty
@@ -226,14 +207,12 @@ int main() {
     initialize();
 
     for (int i = 0; i < 100000; ++i) { // 100000
-        cout << "Iteration " << i << endl;
-        // 1. get first event from GEL
         if (GELsize == 0) {
             break;
         }
-        Event *ev = GELhead; // get front because first element needs to be the next event
+        // 1. get first event from GEL
+        Event *ev = GELhead; 
         delete_head(); // delete front
-        iterate();
         
         // 2. if the first event is an arrival event then process-arrival-event
         if (ev->type == Event::arrival) {
@@ -242,10 +221,8 @@ int main() {
             process_departure_event(ev);
         }
 
-        iterate();
     }
     
-   // output statistics
    output_statistics();
 
 }
