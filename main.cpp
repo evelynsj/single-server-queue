@@ -27,8 +27,8 @@ int GELsize;
 
 /* global variables for statistics */
 double total_time;
-double server_busy_count;
-int total_length;
+double server_busy_time;
+int total_length; // TODO: FIGURE OUT WHERE THE TOTAL LENGTH GOES
 int packets_dropped;
 
 /* output statistics */
@@ -70,7 +70,7 @@ void initialize() {
 
     // counters for maintaining statistics
     total_time = 0;
-    server_busy_count = 0;
+    server_busy_time = 0;
     total_length = 0;
     packets_dropped = 0;
 
@@ -94,25 +94,23 @@ void insert(Event* event) { // insert to GEL
         GELhead->prev = nullptr; 
     }
     else { // TODO: insert sorted
+        cout << "insert sorted" << endl;
         if (event->event_time < GELhead->event_time) { // insert in front of head
             event->next = GELhead;
             event->prev = nullptr;
             GELhead->prev = event;
             GELhead = event;
-        }  
+        }
         // TODO: if insert in the middle
         // TODO: if insert at the end
     }
     GELsize++;
 }
 
-void delete_head(Event *event) {
+void delete_head() {
     cout << "Delete head" << endl;
-    if (GELhead == event) { // if node is head
-        GELhead = event->next;
-    }
+    GELhead = GELhead->next;
     GELsize--;
-    delete event;
     // TODO: if node is tail
     // TODO: if node is middle
 }
@@ -149,7 +147,7 @@ void process_arrival_event(Event *curr_ev) {
             // Schedule a departure event:
                 double processing_service_time = curr_ev->service_time;
                 double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
-                create_departure(departure_event_time, 0);
+                create_departure(departure_event_time, processing_service_time);
                 iterate();
         }
         
@@ -158,6 +156,22 @@ void process_arrival_event(Event *curr_ev) {
             // TODO: if queue is full, drop packet and RECORD
             // TODO: Since this is a new arrival event, increment length
             // TODO: Update STATS
+
+}
+
+void process_departure_event(Event* ev) {
+    cout << "process departure" << endl;
+    current_time = ev->event_time;
+    double processing_service_time = ev->service_time;
+    cout << current_time << endl;
+    // TODO: MIGHT NEED TO UPDATE TOTAL LENGTH
+    server_busy_time += processing_service_time;
+    length--;
+    // TODO: If queue is empty (length ==0) do nothing
+    // TODO: If queue is not empty (length > 0) do:
+        // TODO: Dequeue first packet from buffer
+        // TODO: Create new departure event for a time which si current time + service time
+        // TODO: Insert event at the right place in GEL
 
 }
 
@@ -171,19 +185,22 @@ int main() {
     
     initialize();
 
-    for (int i = 0; i < 1; ++i) { // 100000
+    for (int i = 0; i < 2; ++i) { // 100000
+        cout << "Iteration " << i << endl;
         // 1. get first event from GEL
         if (GELsize == 0) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
             break;
         }
         Event *ev = GELhead; // get front because first element needs to be the next event
-        delete_head(GELhead); // delete front
+        delete_head(); // delete front
+        iterate();
         
         // 2. if the first event is an arrival event then process-arrival-event
         if (ev->type == Event::arrival) {
             process_arrival_event(ev);
+        } else { // 3. Otherwise, it must be a departure event and hence process-service-completion
+            process_departure_event(ev);
         }
-        // 3. Otherwise, it must be a departure event and hence process-service-completion
     }
     
 
