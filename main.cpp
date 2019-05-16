@@ -23,6 +23,7 @@ double arrival_rate; // lambda
 queue <Event*> buffer; // models the buffer
 Event* GELhead;
 Event* GELtail;
+int GELsize;
 
 /* global variables for statistics */
 double total_time;
@@ -57,6 +58,7 @@ void initialize() {
     // initialize head and tail
     GELhead = nullptr;
     GELtail = nullptr; // TODO: do we need tail????
+    GELsize = 0;
 
     // counters for maintaining statistics
     total_time = 0;
@@ -71,7 +73,7 @@ void initialize() {
     double first_arrival_time = neg_exp_time(arrival_rate) + current_time; // event time for first arrival event
     double first_service_time = neg_exp_time(service_rate);
     create_arrival(first_arrival_time, first_service_time);
-    
+
     cout << "Curr time is " << current_time << endl;
     iterate();
     
@@ -85,6 +87,7 @@ void insert(Event* event) {
         GELhead->prev = nullptr; 
     }
     // TODO: insert sorted
+    GELsize++;
 }
 
 void delete_head(Event *event) {
@@ -146,19 +149,19 @@ int main() {
     
     initialize();
 
-    // for (int i = 0; i < 2; ++i) { // 100000
-    //     // 1. get first event from GEL
-    //     if (GELhead == nullptr) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
-    //         break;
-    //     }
-    //     Event *ev = GELhead; // get front because first element needs to be the next event
-    //     delete_head(GELhead); // delete front
-    //     // 2. if the first event is an arrival event then process-arrival-event
-    //     if (ev->type == Event::arrival) {
-    //         process_arrival_event(ev);
-    //     }
-    //     // 3. Otherwise, it must be a departure event and hence process-service-completion
-    // }
+    for (int i = 0; i < 1; ++i) { // 100000
+        // 1. get first event from GEL
+        if (GELsize == 0) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
+            break;
+        }
+        // Event *ev = GELhead; // get front because first element needs to be the next event
+        // delete_head(GELhead); // delete front
+        // 2. if the first event is an arrival event then process-arrival-event
+        // if (ev->type == Event::arrival) {
+        //     process_arrival_event(ev);
+        // }
+        // 3. Otherwise, it must be a departure event and hence process-service-completion
+    }
     
 
    // output statistics
