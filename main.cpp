@@ -4,8 +4,6 @@
 #include <queue>
 using namespace std;
 
-// TODO: MAXIMUM BUFFER
-
 struct Event {
     double event_time; // when event occurs. For arrival event, it's the time the packet arrives at the transmitter. For a departure event, it's the time when server is finished transmitting the packet.
     double service_time;
@@ -66,7 +64,7 @@ void initialize() {
 
     // initialize head and tail
     GELhead = nullptr;
-    GELtail = nullptr; // TODO: do we need tail????
+    GELtail = nullptr;
     GELsize = 0;
 
     // counters for maintaining statistics
@@ -91,10 +89,10 @@ void insert(Event* event) { // insert to GEL
     // if head is nullptr
     if (GELhead == nullptr) {
         GELhead = event;
-        GELhead->next = nullptr; // TODO: is this where we assign next and prev
+        GELhead->next = nullptr;
         GELhead->prev = nullptr; 
     }
-    else { // TODO: insert sorted
+    else {
         cout << "insert sorted" << endl;
         if (event->event_time < GELhead->event_time) { // insert in front of head
             event->next = GELhead;
@@ -131,8 +129,6 @@ void delete_head() {
     cout << "Delete head" << endl;
     GELhead = GELhead->next;
     GELsize--;
-    // TODO: if node is tail
-    // TODO: if node is middle
 }
 
 void iterate() {
@@ -174,7 +170,7 @@ void process_arrival_event(Event *curr_ev) {
             length++;
             iterate();
         }
-        else if (length > 0) { // TODO: If server is not free
+        else if (length > 0) { // If server is not free
             cout << "server is busy" << endl;
             cout << length << endl;
             if (length - 1 < MAXBUFFER) { // if queue is not full, put packet into queue
@@ -189,23 +185,22 @@ void process_arrival_event(Event *curr_ev) {
         }
 }
 
-void process_departure_event(Event* ev) {
+void process_departure_event(Event* curr_ev) {
     cout << "process departure" << endl;
-    current_time = ev->event_time;
-    double processing_service_time = ev->service_time;
+    current_time = curr_ev->event_time;
+    double processing_service_time = curr_ev->service_time;
     cout << "Processing current time is " << current_time << endl;
-    // TODO: MIGHT NEED TO UPDATE TOTAL LENGTH
     server_busy_time += processing_service_time;
     --length;
     if (length == 0) { // do nothing if queue is empty
         return;
     }
-    else if (length > 0) { // TODO: if queue is not empty
-        // TODO: Dequeue first packet from buffer
-        // TODO: Create new departure event for a time which si current time + service time
-        // TODO: Insert event at the right place in GEL
+    else if (length > 0) { // if queue is not empty
+        Event *ev = buffer.front(); // Dequeue first packet from buffer
+        double next_event_time = current_time + ev->service_time; // Create departure event
+        double next_service_time = ev->service_time;
+        create_departure(next_event_time, next_service_time);
     }
-        
 }
 
 int main() {
@@ -221,7 +216,7 @@ int main() {
     
     initialize();
 
-    for (int i = 0; i < 8; ++i) { // 100000
+    for (int i = 0; i < 100000; ++i) { // 100000
         cout << "Iteration " << i << endl;
         // 1. get first event from GEL
         if (GELsize == 0) {
