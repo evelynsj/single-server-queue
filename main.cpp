@@ -101,8 +101,18 @@ void insert(Event* event) { // insert to GEL
             GELhead->prev = event;
             GELhead = event;
         }
-        // TODO: if insert in the middle
-        // TODO: if insert at the end
+        else {
+            Event *curr = GELhead;
+            while (curr) {
+                // TODO: if insert in the middle
+                if (curr->next == nullptr && event->event_time > curr->event_time) { // Insert at the end
+                    curr->next = event;
+                    event->prev = curr;
+                    event->next = nullptr;
+                }
+                curr = curr->next;
+            }
+        }
     }
     GELsize++;
 }
@@ -134,8 +144,9 @@ void iterate() {
 }
 
 void process_arrival_event(Event *curr_ev) {
+    cout << "Process arrival event" << endl;
     current_time = curr_ev->event_time; // set current time to be event time
-
+    cout << "Current processing event time is " << current_time << endl;
     // Schedule next arrival event
     double next_event_time = current_time + neg_exp_time(arrival_rate);
     double next_service_time = neg_exp_time(service_rate);
@@ -145,10 +156,12 @@ void process_arrival_event(Event *curr_ev) {
     // TODO: Process arrival event
         if (length == 0) { // Server is free
             // Schedule a departure event:
-                double processing_service_time = curr_ev->service_time;
-                double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
-                create_departure(departure_event_time, processing_service_time);
-                iterate();
+            cout << "Server is free" << endl;
+            double processing_service_time = curr_ev->service_time;
+            double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
+            cout << departure_event_time << endl;
+            create_departure(departure_event_time, processing_service_time);
+            iterate();
         }
         
         // TODO: if server is not free (length > 0)
@@ -163,17 +176,20 @@ void process_departure_event(Event* ev) {
     cout << "process departure" << endl;
     current_time = ev->event_time;
     double processing_service_time = ev->service_time;
-    cout << current_time << endl;
+    cout << "Processing current time is " << current_time << endl;
     // TODO: MIGHT NEED TO UPDATE TOTAL LENGTH
     server_busy_time += processing_service_time;
-    
-    // TODO: If queue is empty (length ==0) do nothing
-    // TODO: If queue is not empty (length > 0) do:
+
+    if (length == 0) { // do nothing if queue is empty
+        return;
+    }
+    else if (length > 0) { // TODO: if queue is not empty
         // TODO: decrement length
         // TODO: Dequeue first packet from buffer
         // TODO: Create new departure event for a time which si current time + service time
         // TODO: Insert event at the right place in GEL
-
+    }
+        
 }
 
 int main() {
@@ -186,7 +202,7 @@ int main() {
     
     initialize();
 
-    for (int i = 0; i < 2; ++i) { // 100000
+    for (int i = 0; i < 5; ++i) { // 100000
         cout << "Iteration " << i << endl;
         // 1. get first event from GEL
         if (GELsize == 0) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
@@ -202,6 +218,8 @@ int main() {
         } else { // 3. Otherwise, it must be a departure event and hence process-service-completion
             process_departure_event(ev);
         }
+
+        iterate();
     }
     
 
