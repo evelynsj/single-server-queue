@@ -180,6 +180,7 @@ void process_departure_event(Event* curr_ev) {
     }
     else if (length > 0) { // if queue is not empty
         Event *ev = buffer.front(); // Dequeue first packet from buffer
+        buffer.pop();
         double next_event_time = current_time + ev->service_time; // Create departure event
         double next_service_time = ev->service_time;
         create_departure(next_event_time, next_service_time);
@@ -189,8 +190,11 @@ void process_departure_event(Event* curr_ev) {
 void output_statistics() {
     total_time = current_time;
     mean_server_utilization = server_busy_time / total_time;
+    cout << "Mean server utilization: " << mean_server_utilization << endl;
     mean_queue_length = total_length / total_time;
+    cout << "Mean queue length: " << mean_queue_length << endl;
     number_packets_dropped = packets_dropped;
+    cout << "Number of packets dropped: " << number_packets_dropped << endl;
 }
 
 int main() {
