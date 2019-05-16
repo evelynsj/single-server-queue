@@ -53,6 +53,14 @@ void create_arrival(double ev_time, double serv_time) {
     insert(ev);
 }
 
+void create_departure(double ev_time, double serv_time) {
+    Event *ev = new Event;
+    ev->event_time = ev_time;
+    ev->service_time = serv_time;
+    ev->type = Event::departure;
+    insert(ev);
+}
+
 void initialize() {
 
     // initialize head and tail
@@ -78,14 +86,23 @@ void initialize() {
     
 }
 
-void insert(Event* event) {
+void insert(Event* event) { // insert to GEL
     // if head is nullptr
     if (GELhead == nullptr) {
         GELhead = event;
         GELhead->next = nullptr; // TODO: is this where we assign next and prev
         GELhead->prev = nullptr; 
     }
-    // TODO: insert sorted
+    else { // TODO: insert sorted
+        if (event->event_time < GELhead->event_time) { // insert in front of head
+            event->next = GELhead;
+            event->prev = nullptr;
+            GELhead->prev = event;
+            GELhead = event;
+        }  
+        // TODO: if insert in the middle
+        // TODO: if insert at the end
+    }
     GELsize++;
 }
 
@@ -120,19 +137,22 @@ void iterate() {
 
 void process_arrival_event(Event *curr_ev) {
     current_time = curr_ev->event_time; // set current time to be event time
+
     // Schedule next arrival event
-        
-        double next_event_time = current_time + neg_exp_time(arrival_rate);
-        double next_service_time = neg_exp_time(service_rate);
-        create_arrival(next_event_time, next_service_time);
-        iterate();
+    double next_event_time = current_time + neg_exp_time(arrival_rate);
+    double next_service_time = neg_exp_time(service_rate);
+    create_arrival(next_event_time, next_service_time);
+    iterate();
 
     // TODO: Process arrival event
-        // TODO: If server is free (length == 0)
-             // TODO: Schedule a departure event:
-                // TODO: Get service time
-                // TODO: Create a departure event (time = curr time + service time)
-                // TODO: Insert event into GEL (make sure it's sorted)
+        if (length == 0) { // Server is free
+            // Schedule a departure event:
+                double processing_service_time = curr_ev->service_time;
+                double departure_event_time = current_time + processing_service_time; // Create a departure event (time = curr time + service time)
+                create_departure(departure_event_time, 0);
+                iterate();
+        }
+        
         // TODO: if server is not free (length > 0)
             // TODO: If queue is not full (length - 1 < MAXBUFFER), put packet into queue
             // TODO: if queue is full, drop packet and RECORD
