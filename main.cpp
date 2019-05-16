@@ -44,6 +44,14 @@ double neg_exp_time(double rate) {
     return ((-1/rate)*log(1-u));
 }
 
+void create_arrival(double ev_time, double serv_time) {
+    Event *ev = new Event;
+    ev->event_time = ev_time;
+    ev->service_time = serv_time;
+    ev->type = Event::arrival;
+    insert(ev);
+}
+
 void initialize() {
 
     // initialize head and tail
@@ -60,16 +68,12 @@ void initialize() {
     current_time = 0;
 
     // Create first arrival event
-    Event *first = new Event;    
     double first_arrival_time = neg_exp_time(arrival_rate) + current_time; // event time for first arrival event
     double first_service_time = neg_exp_time(service_rate);
-    first->event_time = first_arrival_time;
-    first->service_time = first_service_time;
-    first->type = Event::arrival;
-    first->next = nullptr;
-    first->prev = nullptr;
-
-    insert(first); // insert first arrival event to GEL
+    create_arrival(first_arrival_time, first_service_time);
+    
+    cout << "Curr time is " << current_time << endl;
+    iterate();
     
 }
 
@@ -77,6 +81,8 @@ void insert(Event* event) {
     // if head is nullptr
     if (GELhead == nullptr) {
         GELhead = event;
+        GELhead->next = nullptr; // TODO: is this where we assign next and prev
+        GELhead->prev = nullptr; 
     }
     // TODO: insert sorted
 }
@@ -93,9 +99,9 @@ void iterate() {
     Event *curr = GELhead;
     while (curr != nullptr) {
         if (curr->type == Event::arrival) {
-            cout << "Arrival " << endl;
+            cout << "Arrival ";
         } else {
-            cout << "Departure " << endl;
+            cout << "Departure ";
         }
         cout << curr->event_time << endl;
         curr = curr->next;
