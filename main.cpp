@@ -70,9 +70,6 @@ void initialize() {
     first->prev = nullptr;
 
     insert(first); // insert first arrival event to GEL
-
-    iterate(); // TODO: delete later
-    cout << "done iterating" << endl;
     
 }
 
@@ -95,40 +92,43 @@ void delete_head(Event *event) {
 void iterate() {
     Event *curr = GELhead;
     while (curr != nullptr) {
+        if (curr->type == Event::arrival) {
+            cout << "Arrival " << endl;
+        } else {
+            cout << "Departure " << endl;
+        }
         cout << curr->event_time << endl;
         curr = curr->next;
     }
+    cout << "done iterating" << endl;
 }
 
-void process_arrival_event(Event *ev) {
-    current_time = ev->event_time; // set current time to be event time
-    // Schedule next arrival event
-        double next_event_time = current_time + negative_exponentially_distributed_time(arrival_rate);
-        double next_service_time = negative_exponentially_distributed_time(service_rate);
+// void process_arrival_event(Event *ev) {
+//     current_time = ev->event_time; // set current time to be event time
+//     // Schedule next arrival event
+//         double next_event_time = current_time + negative_exponentially_distributed_time(arrival_rate);
+//         double next_service_time = negative_exponentially_distributed_time(service_rate);
 
-        Event *next_ev = new Event; // Create new arrival event
-        next_ev->event_time = next_event_time;
-        next_ev->service_time = next_service_time;
-        next_ev->type = Event::arrival;
+//         Event *next_ev = new Event; // Create new arrival event
+//         next_ev->event_time = next_event_time;
+//         next_ev->service_time = next_service_time;
+//         next_ev->type = Event::arrival;
 
-        insert(next_ev); // Insert event into GEL. Might need to order
+//         insert(next_ev); // Insert event into GEL. Might need to order
 
-        iterate(); // TODO: delete later
-        cout << "done iterating" << endl;
+//     // TODO: Process arrival event
+//         // TODO: If server is free (length == 0)
+//              // TODO: Schedule a departure event:
+//                 // TODO: Get service time
+//                 // TODO: Create a departure event (time = curr time + service time)
+//                 // TODO: Insert event into GEL (make sure it's sorted)
+//         // TODO: if server is not free (length > 0)
+//             // TODO: If queue is not full (length - 1 < MAXBUFFER), put packet into queue
+//             // TODO: if queue is full, drop packet and RECORD
+//             // TODO: Since this is a new arrival event, increment length
+//             // TODO: Update STATS
 
-    // TODO: Process arrival event
-        // TODO: If server is free (length == 0)
-             // TODO: Schedule a departure event:
-                // TODO: Get service time
-                // TODO: Create a departure event (time = curr time + service time)
-                // TODO: Insert event into GEL (make sure it's sorted)
-        // TODO: if server is not free (length > 0)
-            // TODO: If queue is not full (length - 1 < MAXBUFFER), put packet into queue
-            // TODO: if queue is full, drop packet and RECORD
-            // TODO: Since this is a new arrival event, increment length
-            // TODO: Update STATS
-
-}
+// }
 
 int main() {
 
@@ -140,19 +140,19 @@ int main() {
     
     initialize();
 
-    for (int i = 0; i < 2; ++i) { // 100000
-        // 1. get first event from GEL
-        if (GELhead == nullptr) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
-            break;
-        }
-        Event *ev = GELhead; // get front because first element needs to be the next event
-        delete_head(GELhead); // delete front
-        // 2. if the first event is an arrival event then process-arrival-event
-        if (ev->type == Event::arrival) {
-            process_arrival_event(ev);
-        }
-        // 3. Otherwise, it must be a departure event and hence process-service-completion
-    }
+    // for (int i = 0; i < 2; ++i) { // 100000
+    //     // 1. get first event from GEL
+    //     if (GELhead == nullptr) { // TODO: TRY USING A CLASS SO CAN KEEP SIZE (PRIVATE)
+    //         break;
+    //     }
+    //     Event *ev = GELhead; // get front because first element needs to be the next event
+    //     delete_head(GELhead); // delete front
+    //     // 2. if the first event is an arrival event then process-arrival-event
+    //     if (ev->type == Event::arrival) {
+    //         process_arrival_event(ev);
+    //     }
+    //     // 3. Otherwise, it must be a departure event and hence process-service-completion
+    // }
     
 
    // output statistics
